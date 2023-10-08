@@ -111,16 +111,10 @@ class NewItem: UIViewController {
     
     func setupAddTargetIsNotEmptyTextFields() {
         buttonNewDish.isEnabled = false
-        name.addTarget(self, action: #selector(textFieldsIsNotEmpty),
-                                    for: .editingChanged)
-        protein.addTarget(self, action: #selector(textFieldsIsNotEmpty),
-                                    for: .editingChanged)
-        fats.addTarget(self, action: #selector(textFieldsIsNotEmpty),
-                                    for: .editingChanged)
-        carbs.addTarget(self, action: #selector(textFieldsIsNotEmpty),
-                                    for: .editingChanged)
-        kcals.addTarget(self, action: #selector(textFieldsIsNotEmpty),
-                                    for: .editingChanged)
+        [name, protein, fats, carbs, kcals].forEach {
+            $0.addTarget(self, action: #selector(textFieldsIsNotEmpty),
+                         for: .editingChanged)
+        }
     }
     
     @objc func textFieldsIsNotEmpty(sender: UITextField) {
@@ -139,25 +133,24 @@ class NewItem: UIViewController {
         buttonNewDish.isEnabled = true
     }
     
+    func setConstraints() {
+        NSLayoutConstraint.activate([
+            titleNewItem.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+            titleNewItem.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
+            
+            stack.topAnchor.constraint(equalTo: titleNewItem.bottomAnchor, constant: 16),
+            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            stack.heightAnchor.constraint(equalToConstant: 284),
+            
+            buttonNewDish.heightAnchor.constraint(equalToConstant: 44),
+            buttonNewDish.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            buttonNewDish.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            buttonNewDish.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 32),
+        ])
+    }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        title = "Обед"
-        
-        view.addSubview(stack)
-        view.addSubview(titleNewItem)
-        view.addSubview(buttonNewDish)
-        
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        titleNewItem.translatesAutoresizingMaskIntoConstraints = false
-        buttonNewDish.translatesAutoresizingMaskIntoConstraints = false
-        
-        [name, protein, fats, carbs, kcals].forEach {
-            stack.addArrangedSubview($0)
-        }
-        
-        setupAddTargetIsNotEmptyTextFields()
-        
+    func addActionForButton() {
         buttonNewDish.addAction(
             .init {[weak self] _ in
                 guard let self else { return }
@@ -179,21 +172,25 @@ class NewItem: UIViewController {
             },
             for: .touchUpInside
         )
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
-        NSLayoutConstraint.activate([
-            titleNewItem.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            titleNewItem.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
-            
-            stack.topAnchor.constraint(equalTo: titleNewItem.bottomAnchor, constant: 16),
-            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            stack.heightAnchor.constraint(equalToConstant: 284),
-            
-            buttonNewDish.heightAnchor.constraint(equalToConstant: 44),
-            buttonNewDish.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            buttonNewDish.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            buttonNewDish.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 32),
-        ])
+        title = "Обед"
+        
+        [stack, titleNewItem, buttonNewDish].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        
+        [name, protein, fats, carbs, kcals].forEach {
+            stack.addArrangedSubview($0)
+        }
+        
+        setupAddTargetIsNotEmptyTextFields()
+        addActionForButton()
+        setConstraints()
     }
     
 }

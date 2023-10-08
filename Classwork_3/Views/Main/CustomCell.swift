@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol TableViewCellDelegate: class {
+protocol TableViewCellDelegate: AnyObject {
     func starButtonTapped(_ cell: TableViewCell)
 }
 
@@ -18,11 +18,31 @@ class TableViewCell: UITableViewCell {
     let carbs = UILabel()
     let protein = UILabel()
     let images = [UIImage(named: "fats"), UIImage(named: "protein"), UIImage(named: "carbs")]
-    let substances = UIStackView()
-    let stack = UIStackView()
+    let substances: UIStackView = {
+        let substances = UIStackView()
+        substances.axis = .horizontal
+        substances.spacing = 12
+        return substances
+    }()
+    
+    let stack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .leading
+        return stack
+    }()
+    
     let label = UILabel()
     let kcalLabel = UILabel()
-    let starButton = UIButton()
+    let starButton: UIButton = {
+        let starButton = UIButton()
+        starButton.setImage(UIImage(systemName: "star"), for: .normal)
+        starButton.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        starButton.tintColor = UIColor(named: "green_for_button")
+        starButton.isUserInteractionEnabled = true
+        return starButton
+    }()
     
     weak var delegate: TableViewCellDelegate?
     
@@ -39,14 +59,18 @@ class TableViewCell: UITableViewCell {
         titleParagraphStyle.alignment = .center
 
         let titleFont = UIFont(name: "Helvetica Neue", size: 17)
-        let title = NSMutableAttributedString(string: " " + amount,
-            attributes: [.font: titleFont,
-            .foregroundColor: UIColor.gray,
-            .paragraphStyle: titleParagraphStyle])
-
-        attributedText.append(imageString)
-        attributedText.append(title)
-
+        if let titleFont = titleFont {
+            let title = NSMutableAttributedString(
+                string: " " + amount,
+                attributes: [
+                    .font: titleFont,
+                    .foregroundColor: UIColor.gray,
+                    .paragraphStyle: titleParagraphStyle
+                ]
+            )
+            attributedText.append(imageString)
+            attributedText.append(title)
+        }
         substance.attributedText = attributedText
         substance.translatesAutoresizingMaskIntoConstraints = false
     }
@@ -79,36 +103,7 @@ class TableViewCell: UITableViewCell {
         delegate?.starButtonTapped(self)
     }
     
-    private func setupUI() {
-        self.addSubview(stack)
-        self.addSubview(kcalLabel)
-        self.addSubview(starButton)
-        
-        self.selectionStyle = .none
-        
-        substances.addArrangedSubview(protein)
-        substances.addArrangedSubview(fats)
-        substances.addArrangedSubview(carbs)
-        
-        stack.addArrangedSubview(label)
-        stack.addArrangedSubview(substances)
-        
-        stack.axis = .vertical
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        kcalLabel.translatesAutoresizingMaskIntoConstraints = false
-        starButton.translatesAutoresizingMaskIntoConstraints = false
-        stack.alignment = .leading
-        
-        starButton.setImage(UIImage(systemName: "star"), for: .normal)
-        starButton.setImage(UIImage(systemName: "star.fill"), for: .selected)
-        starButton.addTarget(self, action: #selector(starButtonTapped(_:)), for: .touchUpInside)
-        starButton.tintColor = UIColor(named: "green_for_button")
-        starButton.isUserInteractionEnabled = true
-        
-        substances.axis = .horizontal
-        substances.spacing = 12
-        
+    func setConstraints() {
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
             stack.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -8),
@@ -123,5 +118,25 @@ class TableViewCell: UITableViewCell {
             kcalLabel.trailingAnchor.constraint(equalTo: starButton.leadingAnchor, constant: -12),
             kcalLabel.leadingAnchor.constraint(equalTo: stack.trailingAnchor, constant: 12),
         ])
+    }
+    
+    private func setupUI() {
+        self.selectionStyle = .none
+        
+        [protein, fats, carbs].forEach {
+            substances.addArrangedSubview($0)
+        }
+        
+        [label, substances].forEach {
+            stack.addArrangedSubview($0)
+        }
+        
+        [stack, kcalLabel, starButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            self.addSubview($0)
+        }
+        
+        starButton.addTarget(self, action: #selector(starButtonTapped(_:)), for: .touchUpInside)
+        setConstraints()
     }
 }
