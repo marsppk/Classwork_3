@@ -7,18 +7,24 @@
 
 import UIKit
 
-protocol NewItemDelegate: AnyObject {
+protocol NewItemViewControllerDelegate: AnyObject {
     func addNewElement(element: Dish)
 }
 
-class NewItem: UIViewController {
+class NewItemViewController: UIViewController {
     
-    var delegate: NewItemDelegate?
+    // MARK: - Proreties
+    
+    weak var delegate: NewItemViewControllerDelegate?
+    
+    // MARK: - Subviews
     
     private lazy var name: UITextField = {
         let name = UITextField()
         name.placeholder = "Название"
-        name.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        NSLayoutConstraint.activate([
+            name.heightAnchor.constraint(equalToConstant: 44)
+        ])
         let spacerView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: name.frame.height))
         name.leftView = spacerView
         name.leftViewMode = .always
@@ -32,7 +38,9 @@ class NewItem: UIViewController {
     private lazy var protein: UITextField = {
         let name = UITextField()
         name.placeholder = "Белки (на 100 грамм)"
-        name.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        NSLayoutConstraint.activate([
+            name.heightAnchor.constraint(equalToConstant: 44)
+        ])
         let spacerView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: name.frame.height))
         name.leftView = spacerView
         name.leftViewMode = .always
@@ -46,7 +54,9 @@ class NewItem: UIViewController {
     private lazy var fats: UITextField = {
         let name = UITextField()
         name.placeholder = "Жиры (на 100 грамм)"
-        name.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        NSLayoutConstraint.activate([
+            name.heightAnchor.constraint(equalToConstant: 44)
+        ])
         let spacerView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: name.frame.height))
         name.leftView = spacerView
         name.leftViewMode = .always
@@ -60,7 +70,9 @@ class NewItem: UIViewController {
     private lazy var carbs: UITextField = {
         let name = UITextField()
         name.placeholder = "Углеводы (на 100 грамм)"
-        name.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        NSLayoutConstraint.activate([
+            name.heightAnchor.constraint(equalToConstant: 44)
+        ])
         let spacerView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: name.frame.height))
         name.leftView = spacerView
         name.leftViewMode = .always
@@ -108,6 +120,29 @@ class NewItem: UIViewController {
         buttonNewDish.setTitle("Готово", for: .normal)
         return buttonNewDish
     }()
+    
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        title = "Обед"
+        
+        [stack, titleNewItem, buttonNewDish].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        
+        [name, protein, fats, carbs, kcals].forEach {
+            stack.addArrangedSubview($0)
+        }
+        
+        setupAddTargetIsNotEmptyTextFields()
+        addActionForButton()
+        setConstraints()
+    }
+    
+    // MARK: - Methods
     
     func setupAddTargetIsNotEmptyTextFields() {
         buttonNewDish.isEnabled = false
@@ -173,24 +208,4 @@ class NewItem: UIViewController {
             for: .touchUpInside
         )
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        title = "Обед"
-        
-        [stack, titleNewItem, buttonNewDish].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview($0)
-        }
-        
-        [name, protein, fats, carbs, kcals].forEach {
-            stack.addArrangedSubview($0)
-        }
-        
-        setupAddTargetIsNotEmptyTextFields()
-        addActionForButton()
-        setConstraints()
-    }
-    
 }

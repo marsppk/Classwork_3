@@ -1,5 +1,5 @@
 //
-//  ListOfDish.swift
+//  ListOfDishViewController.swift
 //  Classwork_3
 //
 //  Created by Maria Slepneva on 04.10.2023.
@@ -7,12 +7,21 @@
 
 import UIKit
 
-class ListOfDish: UIViewController, NewItemDelegate, UITableViewDataSource, UITableViewDelegate {
+class ListOfDishViewController: UIViewController {
     
-    func addNewElement(element: Dish) {
-        dishes.append(element)
-        tableView.reloadData()
-    }
+    // MARK: - Proreties
+    
+    var dishes: [Dish] = []
+    
+    // MARK: - Subviews
+    
+    let tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(TableViewCell.self, forCellReuseIdentifier: TableViewCell.identifier)
+        tableView.tableHeaderView = UIView()
+        tableView.separatorInset = UIEdgeInsets.zero
+        return tableView
+    }()
     
     let buttonNewDish: UIButton = {
         let buttonNewDish = UIButton()
@@ -23,38 +32,14 @@ class ListOfDish: UIViewController, NewItemDelegate, UITableViewDataSource, UITa
         return buttonNewDish
     }()
     
-    let tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.register(TableViewCell.self, forCellReuseIdentifier: TableViewCell.identifier)
-        tableView.tableHeaderView = UIView()
-        tableView.separatorInset = UIEdgeInsets.zero
-        return tableView
-    }()
+    // MARK: - Lifecycle
     
-    var dishes: [Dish] = []
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dishes.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.identifier, for: indexPath) as? TableViewCell else { fatalError() }
-        let dish = dishes[indexPath.row]
-        cell.delegate = self
-        cell.configureSubstances(image: cell.images[0], substance: cell.fats, amount: String(dish.fats))
-        cell.configureSubstances(image: cell.images[1], substance: cell.protein, amount: String(dish.protein))
-        cell.configureSubstances(image: cell.images[2], substance: cell.carbs, amount: String(dish.carbs))
-        cell.configureName(name: dish.name)
-        cell.configureKcal(amount: String(dish.kcal))
-        cell.configureButton(isFavorive: dish.isSelected)
-        cell.contentView.isUserInteractionEnabled = false
-        return cell
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
     }
+    
+    // MARK: - Methods
     
     func addDefaultDishes() {
         dishes.append(Dish(name: "Салат “Оливье”", protein: "30", fats: "30", carbs: "30", kcal: "47", isSelected: false))
@@ -88,7 +73,7 @@ class ListOfDish: UIViewController, NewItemDelegate, UITableViewDataSource, UITa
         buttonNewDish.addAction(
             .init {[weak self] _ in
                 guard let self else { return }
-                let vc = NewItem()
+                let vc = NewItemViewController()
                 vc.view.backgroundColor = .white
                 vc.delegate = self
                 self.navigationController?.pushViewController(vc, animated: true)
@@ -108,11 +93,50 @@ class ListOfDish: UIViewController, NewItemDelegate, UITableViewDataSource, UITa
     }
 }
 
-extension ListOfDish: TableViewCellDelegate {
+// MARK: - NewItemViewControllerDelegate
+
+extension ListOfDishViewController: NewItemViewControllerDelegate {
+    func addNewElement(element: Dish) {
+        dishes.append(element)
+        tableView.reloadData()
+    }
+}
+
+// MARK: - TableViewCellDelegate
+
+extension ListOfDishViewController: TableViewCellDelegate {
     func starButtonTapped(_ cell: TableViewCell) {
         if let indexPath = tableView.indexPath(for: cell) {
             dishes[indexPath.row].isSelected = !dishes[indexPath.row].isSelected
             tableView.reloadData()
         }
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension ListOfDishViewController: UITableViewDelegate {
+    
+}
+
+// MARK: - UITableViewDataSource
+
+extension ListOfDishViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return dishes.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCell.identifier, for: indexPath) as? TableViewCell else { fatalError() }
+        let dish = dishes[indexPath.row]
+        cell.delegate = self
+        cell.configureSubstances(amount: String(dish.fats))
+        cell.configureSubstances(amount: String(dish.protein))
+        cell.configureSubstances(amount: String(dish.carbs))
+        cell.configureName(name: dish.name)
+        cell.configureKcal(amount: String(dish.kcal))
+        cell.configureButton(isFavorive: dish.isSelected)
+        cell.contentView.isUserInteractionEnabled = false
+        return cell
     }
 }

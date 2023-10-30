@@ -12,12 +12,13 @@ protocol TableViewCellDelegate: AnyObject {
 }
 
 class TableViewCell: UITableViewCell {
-    static let identifier = "TableViewCell"
     
-    let fats = UILabel()
-    let carbs = UILabel()
-    let protein = UILabel()
+    static let identifier = "TableViewCell"
+
     let images = [UIImage(named: "fats"), UIImage(named: "protein"), UIImage(named: "carbs")]
+    
+    weak var delegate: TableViewCellDelegate?
+    
     let substances: UIStackView = {
         let substances = UIStackView()
         substances.axis = .horizontal
@@ -33,8 +34,6 @@ class TableViewCell: UITableViewCell {
         return stack
     }()
     
-    let label = UILabel()
-    let kcalLabel = UILabel()
     let starButton: UIButton = {
         let starButton = UIButton()
         starButton.setImage(UIImage(systemName: "star"), for: .normal)
@@ -44,35 +43,51 @@ class TableViewCell: UITableViewCell {
         return starButton
     }()
     
-    weak var delegate: TableViewCellDelegate?
+    let label = UILabel()
+    let fats = UILabel()
+    let carbs = UILabel()
+    let protein = UILabel()
+    let kcalLabel = UILabel()
     
-    func configureSubstances(image: UIImage?, substance: UILabel, amount: String) {
-        let attributedText = NSMutableAttributedString()
-                
-        let imageAttachment = NSTextAttachment()
-        imageAttachment.image = image
-        let imageString = NSAttributedString(attachment: imageAttachment)
-        let newImageSize = CGSize(width: 26, height: 26)
-        imageAttachment.bounds = CGRect(origin: CGPoint(x: 0, y: -6.5), size: newImageSize)
-
-        let titleParagraphStyle = NSMutableParagraphStyle()
-        titleParagraphStyle.alignment = .center
-
-        let titleFont = UIFont(name: "Helvetica Neue", size: 17)
-        if let titleFont = titleFont {
-            let title = NSMutableAttributedString(
-                string: " " + amount,
-                attributes: [
-                    .font: titleFont,
-                    .foregroundColor: UIColor.gray,
-                    .paragraphStyle: titleParagraphStyle
-                ]
-            )
-            attributedText.append(imageString)
-            attributedText.append(title)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configureSubstances(amount: String) {
+        let substances = [fats, protein, carbs]
+        for i in 0..<images.count {
+            let attributedText = NSMutableAttributedString()
+            
+            let imageAttachment = NSTextAttachment()
+            imageAttachment.image = images[i]
+            let imageString = NSAttributedString(attachment: imageAttachment)
+            let newImageSize = CGSize(width: 26, height: 26)
+            imageAttachment.bounds = CGRect(origin: CGPoint(x: 0, y: -6.5), size: newImageSize)
+            
+            let titleParagraphStyle = NSMutableParagraphStyle()
+            titleParagraphStyle.alignment = .center
+            
+            let titleFont = UIFont(name: "Helvetica Neue", size: 17)
+            if let titleFont = titleFont {
+                let title = NSMutableAttributedString(
+                    string: " " + amount,
+                    attributes: [
+                        .font: titleFont,
+                        .foregroundColor: UIColor.gray,
+                        .paragraphStyle: titleParagraphStyle
+                    ]
+                )
+                attributedText.append(imageString)
+                attributedText.append(title)
+            }
+            substances[i].attributedText = attributedText
+            substances[i].translatesAutoresizingMaskIntoConstraints = false
         }
-        substance.attributedText = attributedText
-        substance.translatesAutoresizingMaskIntoConstraints = false
     }
     
     func configureName(name: String) {
@@ -88,15 +103,6 @@ class TableViewCell: UITableViewCell {
     
     func configureButton(isFavorive: Bool) {
         starButton.isSelected = isFavorive
-    }
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
     
     @IBAction func starButtonTapped(_ sender: UIButton) {
